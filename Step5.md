@@ -219,11 +219,42 @@ RUN printf "deb http://ftp.us.debian.org/debian jessie main\n" >> /etc/apt/sourc
 
 #### Building your container and application
 
+Let's package our application with only the coreclr so that the binary is nice and compact.
+
+```
+dnu publish --framework dnxcore50 --out publishedoutput
+cd publishedoutput
+```
+
+Then you want to teach Docker how to package an image containing your application,
+and how to execute the image by crafting a `Dockerfile`.
+
+```
+FROM microsoft/aspnet:1.0.0-rc1-final-coreclr
+COPY . /app/
+WORKDIR /app/approot
+EXPOSE 5000/tcp
+ENTRYPOINT ["./web", "--server.urls", "http://0.0.0.0:5000"]
+```
+
 Next we want to run `docker build` to build our application container from the `Dockerfile`.
 
 ```
 docker build -t yourapplication .
 ```
+
+What's the size of our image?
+
+```
+~/publishedoutput$ docker images
+REPOSITORY          TAG                         IMAGE ID            CREATED             SIZE
+yourapplication     latest                      dcabc515b2da        8 minutes ago       387.5 MB
+microsoft/aspnet    1.0.0-rc1-update1-coreclr   88eca18446e5        11 hours ago        357.8 MB
+microsoft/aspnet    1.0.0-rc1-final-coreclr     5b4ac2a01b4d        11 hours ago        355 MB
+microsoft/dotnet    latest                      38351e1dc672        29 hours ago        849.4 MB
+hello-world         latest                      690ed74de00f        5 months ago        960 B
+```
+Nice! yourapplication is only 32.5MB bigger than the base microsoft/aspnet image.
 
 __Note:__ This is an excellent time for another coffee break.
 
@@ -234,10 +265,10 @@ __Note:__ This is an excellent time for another coffee break.
 Now let's `docker run` our application in our new container.
 
 ```
-docker run -t --net host yourapplication
+docker run -t -p 8080:5000 yourapplication
 ```
 
-Open Firefox and navigate to `http://localhost:5000` to confirm it is all working.
+Open Firefox and navigate to `http://localhost:8080/api/values` to confirm it is all working.
 
 ![20-aspnet-core-docker-firefox](Step5/20-aspnet-core-docker-firefox.png)
 
