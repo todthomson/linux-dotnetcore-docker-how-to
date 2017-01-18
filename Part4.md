@@ -285,7 +285,7 @@ __TODO:__ Explain the differences between `netstandard1.6` and `netcoreapp1.1`.
 
 #### `Library.cs`
 
-Let's update our `Program.cs` to turn it into an Integration Test.
+Let's update our `Library.cs` to turn it into an Integration Test.
 
 ```csharp
 using System.Net.Http;
